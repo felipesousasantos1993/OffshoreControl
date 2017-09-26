@@ -1,0 +1,285 @@
+<!DOCTYPE HTML>
+<html lang="pt-BR" ng-app="offshoreControlApp">
+
+<head>
+    <title>
+        OffshoreControl
+    </title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="resources/css/bootstrap.min.css">
+    </link>
+    <link rel="X-SourceMap" href="resources/css/bootstrap.min.css.map">
+    </link>
+    <link rel="stylesheet" href="resources/css/bootstrap-theme.min.css">
+    </link>
+    <link rel="X-SourceMap" href="resources/css/bootstrap-theme.min.css.map">
+    </link>
+    <link rel="stylesheet" href="resources/css/bootstrap-datepicker3.min.css">
+    </link>
+    <link rel="stylesheet" href="resources/css/font-awesome.min.css">
+    </link>
+    <link rel="stylesheet" href="resources/css/style.css">
+    </link>
+    <link rel="stylesheet" href="resources/css/custom.css">
+    </link>
+    <link rel="icon" type="image/png" href="resources/imgs/favicon-32x32.png">
+    <script src="resources/js/jquery-2.1.4.min.js"></script>
+    <script src="resources/js/angular.min.js"></script>
+    <script src="resources/js/bootstrap.min.js"></script>
+    <script src="resources/js/moment.js"></script>
+    <script src="resources/js/bootstrap-datepicker.min.js"></script>
+    <script src="resources/js/bootstrap-datepicker.pt-BR.min.js"></script>
+    <script src="resources/js/jquery.mask.min.js"></script>
+    <script src="resources/js/bootstrap-notify.min.js"></script>
+    <script src="resources/js/app.js"></script>
+</head>
+
+<body ng-controller="offshoreControlController">
+    <div id="wrapper">
+        <header>
+            <nav class="navbar navbar-default navbar-static-top m-b-0">
+                <div class="navbar-header">
+                    <img src="resources/imgs/logo.png" class="logo light-logo"></img>
+                </div>
+            </nav>
+        </header>
+
+        <div id="page-wrapper">
+            <form id="offshoreControlForm" name="offshoreControlForm" novalidate>
+                <div class="container-fluid">
+                    <br/>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#modalInsert" ng-click="clearInsert()">
+                                <i class="fa fa-user-plus" aria-hidden="true"></i> Novo Funcionário
+                            </button>
+                        </div>
+                    </div>
+                    <br/>
+                    <fieldset>
+                        <legend>Filtro</legend>
+                        <div class="row float-right">
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="dateStart">Período Embarque</label>
+                                    <input id="dateStart" ng-model="dateStart" class="form-control datepicker" placeholder="Data Início" />
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="dateStart">&nbsp;</label>
+                                    <input id="dateEnd" ng-model="dateEnd" class="form-control datepicker" placeholder="Data Término" />
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="white-box">
+                                <table class="table table-bordered table-striped" ng-table="tableEmployee" ng-init="init();">
+                                    <thead>
+                                        <th ng-click="sortBy('name')"><a class="sort">Nome</a>
+                                        </th>
+                                        <th>Função</th>
+                                        <th>Empresa</th>
+                                        <th ng-click="sortBy('dateShipment')"><a class="sort">Data Embarque</a>
+                                        </th>
+                                        <th ng-click="sortBy('dateDisembarkation')"><a class="sort">Data Desembarque</a>
+                                        </th>
+                                        <th>Ação</th>
+                                    </thead>
+                                    <tfoot>
+                                        <td colspan="6">
+                                            Total de funcionários: {{filtered.length}}
+                                        </td>
+                                        <tbody>
+                                            <tr ng-show="!employeeList.length">
+                                                <td colspan="6">Nenhum funcionário encontrado</td>
+                                            </tr>
+                                            <tr ng-repeat="e in employeeList | orderBy: orderBy:reverse | dateRangeFilter:dateStart:dateEnd as filtered  track by $index">
+                                                <td>{{e.name}}</td>
+                                                <td class="text-center">{{functions[e.function-1].text}}</td>
+                                                <td class="text-center">{{companies[e.company-1].text}}</td>
+                                                <td class="text-center">{{e.dateShipment | date : 'dd/MM/yyyy'}}</td>
+                                                <td class="text-center">{{e.dateDisembarkation | date : 'dd/MM/yyyy'}}</td>
+                                                <td class="text-center">
+                                                    <button ng-show="{{!e.dateShipment.length}}" ng-click="select(e, $index, 'e')" type="button" data-toggle="modal" data-target="#modalShipment" class="btn btn-primary btn-sm btn-circle" data-toggle="tooltip" title="Embarcar funcionário">
+                                                        <i class="fa fa-ship" aria-hidden="true"></i>
+                                                    </button>
+                                                    <button ng-show="{{e.dateShipment.length}}" ng-click="select(e, $index, 'd')" class="btn btn-danger btn-sm btn-circle" type="button" data-toggle="modal" data-target="#modalDisembarkation" data-toggle="tooltip" title="Desembarcar funcionário">
+                                                        <i class="fa fa-undo" aria-hidden="true"></i>
+                                                    </button>
+                                                    <button ng-click="select(e, $index, 'update')" class="btn btn-default btn-sm btn-circle" type="button" data-toggle="modal" data-target="#modalInsert" data-toggle="tooltip" title="Editar funcionário">
+                                                        <i class="fa fa-edit" aria-hidden="true"></i>
+                                                    </button>
+                                                    <button ng-click="select(e, $index, 'delete')" class="btn btn-default btn-sm btn-circle" type="button" data-toggle="modal" data-target="#modalDelete" data-toggle="tooltip" title="Excluir funcionário">
+                                                        <i class="fa fa-trash" aria-hidden="true"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <footer class="footer text-center"> 2017 © OffshoreControl</footer>
+            </form>
+        </div>
+
+        <div id="modalDelete" class="modal fade" tabindex="-1" role="dialog">
+            <form id="formDelete" name="formDelete" novalidate>
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="modal-title">Aviso</h4>
+                        </div>
+                        <div class="modal-body">
+                            <p ng-show="!employee.dateShipment.length">Confirma a exclusão do funcionário <strong>{{employee.name}}</strong>?
+                                <p>
+                                    <p ng-show="employee.dateShipment.length">O funcionário <strong> {{employee.name}} </strong> está embarcado, confirma a exclusão?
+                                        <p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" ng-click="delete()">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="modalInsert" class="modal fade" tabindex="-1" role="dialog">
+            <form id="formInsert" name="formInsert" novalidate>
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                            </button>
+                            <h4 class="modal-title">Inserir novo funcionário</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="inputName">Nome</label>
+                                        <span class="required">*</span>
+                                        <input id="inputName" ng-model="employee.name" class="form-control" required maxlength="50" placeholder="Insira o nome do funcionário" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="selectFunction">Função</label>
+                                        <span class="required">*</span>
+                                        <select id="selectFunction" ng-options="f.value as f.text for f in functions" ng-model="employee.function" placeholder="Selecione" class="form-control" required>
+                                            <option value="">Selecione</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label for="selectCompanies">Empresa</label>
+                                        <span class="required">*</span>
+                                        <select id="selectCompanies" ng-options="c.value as c.text for c in companies" ng-model="employee.company" class="form-control" required>
+                                            <option value="">Selecione</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" ng-click="insert()" ng-show="operation == 'insert'">Confirmar</button>
+                            <button type="button" class="btn btn-primary" ng-click="update()" ng-show="operation == 'update'">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="modalShipment" class="modal fade" tabindex="-1" role="dialog">
+            <form id="formShipment" name="formShipment" novalidate>
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                            </button>
+                            <h3 class="modal-title">Embarcar funcionário</h3>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p>Confirma a embarcação do funcionário <strong>{{employee.name}} - {{functions[employee.function].text}}</strong> ?</p>
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <label>Date de Embarque</label>
+                                    <span class="required">*</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" ng-model="employee.dateShipment " class="datepicker form-control" required="required"> </input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" ng-click="cancel()" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" ng-click="confirmShipment()">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="modalDisembarkation" class="modal fade" tabindex="-1" role="dialog">
+            <form id="formDisembarkation" name="formDisembarkation" novalidate>
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                            </button>
+                            <h3 class="modal-title">Embarcar funcionário</h3>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <p>Confirma a desembarcação do funcionário <strong>{{employee.name}} - {{functions[employee.function].text}}</strong> ?</p>
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <label>Data de Embarque</label>
+                                </div>
+                                <div class="col-md-4">
+                                    <span>{{employee.dateShipment | date : 'd/MM/yyyy'}}</span>
+                                </div>
+                            </div>
+                            <br/>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <label>Date de Desembarque</label>
+                                    <span class="required">*</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" ng-model="employee.dateDisembarkation " class="datepicker form-control" required="required"> </input>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" ng-click="confirmDisembarkation()">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="resources/js/custom.js"></script>
+</body>
+
+</html>

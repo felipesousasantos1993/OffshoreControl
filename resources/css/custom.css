@@ -1,0 +1,36 @@
+.material-icons {
+	position: relative;
+	top: 6px;
+}
+
+.no-link {
+	text-decoration: none;
+	text-transform: none !important;
+	color: #333;
+}
+
+.btn-circle {
+	border-radius: 100%;
+}
+
+.logo {
+	width: 120px;
+	margin-left: 25px;
+}
+
+.alertContainer {
+	margin-top: 15px;
+    margin-bottom: -5px;
+}
+
+.sort {
+	cursor: pointer;
+}
+
+.alert {
+	z-index: 10000 !important;
+}
+
+span.required {
+	color: red;
+}
